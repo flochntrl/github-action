@@ -1,0 +1,24 @@
+name: Branch Deleted
+on: delete
+jobs:
+  delete:
+    if: github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Feature name extractor
+        id: feature-name-extractor
+        run: |
+          if ! [[ "$(echo ${{ github.event.ref }} | cut -d "/" -f1)" =~ (feat|fix|tech) ]]; then
+              echo "Your branch name does not start with one of the following: feat/, fix/, tech."
+              echo "Your branch name : ${{ github.event.ref }}"
+              exit 1
+          fi
+          if ! [[ "$(echo ${{ github.event.ref }}} | cut -d "/" -f2 | cut -d "-" -f1)" =~ da ]]; then
+              echo "Your branch name does not have a Jira ticket prefix. Ex : feat/da-1244/title-of-my-brand"
+              exit 1
+          fi
+          echo "FEATURE_NAME=$(echo ${{ github.event.ref }} | cut -d "/" -f2)" >> "$GITHUB_OUTPUT"
+      - name: Clean up
+        run: |
+          echo "Clean up for branch ${{ steps.feature-name-extractor.outputs.FEATURE_NAME }}"
